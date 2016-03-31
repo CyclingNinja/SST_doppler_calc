@@ -88,13 +88,14 @@ for T in range(small_cube.shape[0]):
             neg_loglike_sing = lambda x: -loglike_sing(x)
 
             # Daniela: here's the optimization:
-            opt = scipy.optimize.minimize(neg_loglike_sing, init_params, method="L-BFGS-B", tol=1.e-10)
+            opt_sing = scipy.optimize.minimize(neg_loglike_sing, init_params,
+                                               method="L-BFGS-B", tol=1.e-10)
 
             # Daniela: print the negative log-likelihood:
-            print("The value of the negative log-likelihood: " + str(opt.fun))
+            print("The value of the negative log-likelihood: " + str(opt_sing.fun))
 
             # Daniela: the parameters at the maximum of the likelihood is in opt.x:
-            fit_pars = opt.x
+            fit_pars = opt_sing.x
 
             # Daniela : now we can put the parameters back into the Gaussian model
             _fitter_to_model_params(gaus_sing, fit_pars)
@@ -104,11 +105,32 @@ for T in range(small_cube.shape[0]):
             # see also: https://en.wikipedia.org/wiki/Bayesian_information_criterion
             # bic = -2*loglike + n_params * log(n_datapoints)
             # note to myself: opt.fun is -loglike, so we'll just use that here
-            bic = 2.*opt.fun + fit_pars.shape[0]*np.log(x.shape[0])
+            bic_sing = 2.*opt_sing.fun + fit_pars.shape[0]*np.log(x.shape[0])
 
             # Daniela: from here on, you can do the same for the model with two Gaussians
             # Then you can compare the two BICs for a slightly hacky way of model
             # comparison
+
+
+            # DOUBLE GAUSSIAN FITTING
+            ydg = y[:]
+            Imax = np.max(ydg)
+            gaus_doub = (models.Gaussian1D(amplitude=Imax, mean=x[12], stddev=0.2) +
+                         models.Gaussian1D(amplitude=Imax, mean=x[24], stddev=0.2))
+
+            init_params_doub = [np.max(ydg), x[12], np.std(ydg), np.max(ydg), x[24], np.std(ydg)]
+
+            neg_loglike_doub = lambda x: -loglike_sing(x)
+
+            opt_doub = scipy.optimize.minimize(neg_loglike_doub, init_params_doub,
+                                                       method="L-BFGS-B", tol=1.e-10)
+
+            loglike_doub = PoissonlikeDistr(x, ydg, gaus_doub)
+
+            _fitter_to_model_params(gaus_doub, fit_pars)
+
+            bic_doub = 2.*opt_doub.fun + fit_pars.shape[0]*np.log(x.shape[0])
+
 
             fit_g2 = fitting.LevMarLSQFitter()
             g2 = fit_g2(gaus_sing, x, ysg)

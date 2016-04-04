@@ -70,7 +70,7 @@ for T in range(small_cube.shape[0]):
             ysg -= np.min(y)
             x = wave_ind
 
-            # single gaussian fit
+            # SINGLE GAUSSIAN FITTING
             # this definitley works (ish)
             ysg = ysg*-1 + np.max(y)
             # Daniela: is there a reason why there are round brackets around the Gaussian model?
@@ -131,46 +131,47 @@ for T in range(small_cube.shape[0]):
 
             bic_doub = 2.*opt_doub.fun + fit_pars.shape[0]*np.log(x.shape[0])
 
-
-            fit_g2 = fitting.LevMarLSQFitter()
-            g2 = fit_g2(gaus_sing, x, ysg)
-            gsg = lambda x: -1 * g2(x)
-            ysg = ysg*-1
-            t_mean = g2.mean.value
-
-            # revert to an interpolation to find the minima
-            # need to keep the regualar orientation of the y dist
-            if fit_g2.fit_info['param_cov'] is None:
-
+             # use the bic values to assign to fit again and calc the doppler array
+            if bic_doub < bic_sing:
+                fit_sing_g_2 = fitting.LevMarLSQFitter()
+                gs2 = fit_sing_g_2(gaus_sing, x, ysg)
+                gsg = lambda x: -1 * gs2(x)
+                ysg = ysg*-1
+                t_mean = gs2.mean.value
+            else:
+                fit_doub_g_2 = fitting.LevMarLSQFitter()
                 ydg = y[:]
-                Imax = np.max(ydg)
+                gd2 = fit_doub_g_2(gaus_doub, x, ydg)
+                t_mean = gd2.mean.value
 
-                g_init = (models.Gaussian1D(amplitude=Imax, mean=x[12], stddev=0.2) +
-                         models.Gaussian1D(amplitude=Imax, mean=x[24], stddev=0.2))
-                fit_gdg = fitting.LevMarLSQFitter()
-                gdg = fit_gdg(g_init, x, ydg)
-
-                res = minimize(gdg, [6562.8], method='L-BFGS-B', bounds=[[x[19 - 5], x[19 + 5]],])
-                t_mean = res.x
-                if ((t_mean[0] - l_core) > 1) | ((t_mean[0] - l_core) < -1):
-                    t_mean = l_core
             dop_arr[T,xi,yi] = t_mean
+
+
+
+
+#            # revert to an interpolation to find the minima
+#            # need to keep the regualar orientation of the y dist
+#            if fit_g2.fit_info['param_cov'] is None:
+#
+#                ydg = y[:]
+#                Imax = np.max(ydg)
+#
+#                g_init = (models.Gaussian1D(amplitude=Imax, mean=x[12], stddev=0.2) +
+#                         models.Gaussian1D(amplitude=Imax, mean=x[24], stddev=0.2))
+#                fit_gdg = fitting.LevMarLSQFitter()
+#                gdg = fit_gdg(g_init, x, ydg)
+#
+#                res = minimize(gdg, [6562.8], method='L-BFGS-B', bounds=[[x[19 - 5], x[19 + 5]],])
+#                t_mean = res.x
+#                if ((t_mean[0] - l_core) > 1) | ((t_mean[0] - l_core) < -1):
+#                    t_mean = l_core
+#            dop_arr[T,xi,yi] = t_mean
 
 
 np.save('/storage2/jet/SST/dopplergram.npy', dop_arr)
 
 
 
-# double gaussian fit
-# check the fit parameter
-#            if fit_g2.fit_info['param_cov'] is None:
-#                Imax = np.max(y)
-#                g_init = (models.Gaussian1D(amplitude=Imax, mean=x[-12], stddev=1.) +
-#                          models.Gaussian1D(amplitude=Imax, mean=x[12], stddev=1.))
-#                fit_g = fitting.SLSQPLSQFitter()
-#                g2 = fit_g(g_init, x, y)
-#                res = minimize(g2, [6562.8], method='L-BFGS-B', bounds=[[x[19 - 7], x[19 + 7]],])
-            #t_mean = res.x
 
 
 

@@ -3,13 +3,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy.modeling import models, fitting
 from scipy.optimize import minimize
-from scipy.signal import argrelextrema
+#from scipy.signal import argrelextrema
 from scipy.special import gammaln
 from skimage import img_as_float
 from astropy.constants import c
 
 # need to import the _fitter_to_model_params helper function
 from astropy.modeling.fitting import _fitter_to_model_params
+
 
 imfile = '/data_swat/arlimb/crispex.6563.icube'
 spfile = '/data_swat/arlimb/crispex.6563.sp.icube'
@@ -18,7 +19,7 @@ wave_ind = np.loadtxt('spect_ind.txt')
 imheader, icube, spheader, spcube = read_cubes(imfile,spfile)
 
 SST_cad = 2.5
-SST_pix = 0.05
+SST_pix = 0.059
 l_core = 6562.8
 
 
@@ -35,14 +36,14 @@ class PoissonlikeDistr(object):
     def evaluate(self, params):
         # Daniela: set the input parameters in the astropy model using the
         # list of parameters in params
-        _fitter_from_model_params(self.model, params)
+        _fitter_to_model_params(self.model, params)
 
         # Daniela: make the mean model
         mean_model = self.model(x)
 
         # Daniela: not sure what your 'x' in this log-likelihood is, but it should be
         # the mean model
-        loglike = np.sum(-mean_model + self.y*np.log(mean_model) - scipy.special.gammaln(self.y + 1))
+        loglike = np.sum(-mean_model + self.y*np.log(mean_model) - gammaln(self.y + 1))
 
         return loglike
 
@@ -81,15 +82,15 @@ for T in range(small_cube.shape[0]):
             loglike_sing = PoissonlikeDistr(x, ysg, gaus_sing)
 
             # initial parameters
-            init_params = [np.max(ysg), x[19], np.std(ysg)]
+            init_params_s = [np.max(ysg), x[19], np.std(ysg)]
 
             # Daniela: for maximum likelihood fitting, we need to define the *negative*
             # log-likelihood:
             neg_loglike_sing = lambda x: -loglike_sing(x)
 
             # Daniela: here's the optimization:
-            opt_sing = scipy.optimize.minimize(neg_loglike_sing, init_params,
-                                               method="L-BFGS-B", tol=1.e-10)
+            opt_sing = minimize(neg_loglike_sing, init_params_s,
+                                method="L-BFGS-B", tol=1.e-10)
 
             # Daniela: print the negative log-likelihood:
             print("The value of the negative log-likelihood: " + str(opt_sing.fun))
@@ -118,16 +119,20 @@ for T in range(small_cube.shape[0]):
             gaus_doub = (models.Gaussian1D(amplitude=Imax, mean=x[12], stddev=0.2) +
                          models.Gaussian1D(amplitude=Imax, mean=x[24], stddev=0.2))
 
-            init_params_doub = [np.max(ydg), x[12], np.std(ydg), np.max(ydg), x[24], np.std(ydg)]
+            init_params_doub = [np.max(ydg), x[19], np.std(ydg)],
+                                #np.max(ydg), x[24], np.std(ydg)]
+
 
             neg_loglike_doub = lambda x: -loglike_sing(x)
 
-            opt_doub = scipy.optimize.minimize(neg_loglike_doub, init_params_doub,
-                                                       method="L-BFGS-B", tol=1.e-10)
+            opt_doub = minimize(neg_loglike_doub, init_params_doub,
+                                method="L-BFGS-B", tol=1.e-10)
 
             loglike_doub = PoissonlikeDistr(x, ydg, gaus_doub)
 
-            _fitter_to_model_params(gaus_doub, fit_pars)
+            fit_pars_dg = opt_doub.x
+
+            _fitter_to_model_params(gaus_doub, fit_pars_dg)
 
             bic_doub = 2.*opt_doub.fun + fit_pars.shape[0]*np.log(x.shape[0])
 
@@ -168,7 +173,7 @@ for T in range(small_cube.shape[0]):
 #            dop_arr[T,xi,yi] = t_mean
 
 
-np.save('/storage2/jet/SST/dopplergram.npy', dop_arr)
+#np.save('/storage2/jet/SST/dopplergram.npy', dop_arr)
 
 
 

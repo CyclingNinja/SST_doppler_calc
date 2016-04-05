@@ -119,11 +119,11 @@ for T in range(small_cube.shape[0]):
             gaus_doub = (models.Gaussian1D(amplitude=Imax, mean=x[12], stddev=0.2) +
                          models.Gaussian1D(amplitude=Imax, mean=x[24], stddev=0.2))
 
-            init_params_doub = [np.max(ydg), x[19], np.std(ydg)],
-                                #np.max(ydg), x[24], np.std(ydg)]
+            init_params_doub = [np.max(ydg), x[12], np.std(ydg),
+                                np.max(ydg), x[24], np.std(ydg)]
 
 
-            neg_loglike_doub = lambda x: -loglike_sing(x)
+            neg_loglike_doub = lambda x_temp: -loglike_sing(x_temp)
 
             opt_doub = minimize(neg_loglike_doub, init_params_doub,
                                 method="L-BFGS-B", tol=1.e-10)

@@ -116,23 +116,24 @@ for T in range(small_cube.shape[0]):
             # DOUBLE GAUSSIAN FITTING
             ydg = y[:]
             Imax = np.max(ydg)
-            gaus_doub = (models.Gaussian1D(amplitude=Imax, mean=x[12], stddev=0.2) +
+            gaus_double = (models.Gaussian1D(amplitude=Imax, mean=x[12], stddev=0.2) +
                          models.Gaussian1D(amplitude=Imax, mean=x[24], stddev=0.2))
 
-            init_params_doub = [np.max(ydg), x[12], np.std(ydg),
-                                np.max(ydg), x[24], np.std(ydg)]
+            init_params_double = [np.max(ydg), x[12], np.std(ydg),
+                                  np.max(ydg), x[24], np.std(ydg)]
 
 
-            neg_loglike_doub = lambda x_temp: -loglike_sing(x_temp)
+            loglike_double = PoissonlikeDistr(x, ysg, gaus_double)
+            neg_loglike_doub = lambda x: -loglike_double(x)
 
-            opt_doub = minimize(neg_loglike_doub, init_params_doub,
+            opt_doub = minimize(neg_loglike_doub, init_params_double,
                                 method="L-BFGS-B", tol=1.e-10)
 
-            loglike_doub = PoissonlikeDistr(x, ydg, gaus_doub)
+            loglike_doub = PoissonlikeDistr(x, ydg, gaus_double)
 
             fit_pars_dg = opt_doub.x
 
-            _fitter_to_model_params(gaus_doub, fit_pars_dg)
+            _fitter_to_model_params(gaus_double, fit_pars_dg)
 
             bic_doub = 2.*opt_doub.fun + fit_pars.shape[0]*np.log(x.shape[0])
 
@@ -146,7 +147,7 @@ for T in range(small_cube.shape[0]):
             else:
                 fit_doub_g_2 = fitting.LevMarLSQFitter()
                 ydg = y[:]
-                gd2 = fit_doub_g_2(gaus_doub, x, ydg)
+                gd2 = fit_doub_g_2(gaus_double, x, ydg)
                 t_mean = gd2.mean.value
 
             dop_arr[T,xi,yi] = t_mean

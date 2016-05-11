@@ -150,9 +150,8 @@ for T in range(small_cube.shape[0]):
                 gd2 = fit_doub_g_2(gaus_double, x, ydg)
                 t_mean = gd2.mean.value
 
-            dop_arr[T,xi,yi] = t_mean
-
-
+            dop_arr[xi,yi] = t_mean
+    np.save(dop_arr, '/storage2/jet/dop_arrs/dop_arr_{:03d}'.format(T))
 
 
 #            # revert to an interpolation to find the minima

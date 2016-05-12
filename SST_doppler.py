@@ -93,7 +93,7 @@ for T in range(small_cube.shape[0]):
                                 method="L-BFGS-B", tol=1.e-10)
 
             # Daniela: print the negative log-likelihood:
-            print("The value of the negative log-likelihood: " + str(opt_sing.fun))
+            #print("The value of the negative log-likelihood: " + str(opt_sing.fun))
 
             # Daniela: the parameters at the maximum of the likelihood is in opt.x:
             fit_pars = opt_sing.x
@@ -148,7 +148,8 @@ for T in range(small_cube.shape[0]):
                 fit_doub_g_2 = fitting.LevMarLSQFitter()
                 ydg = y[:]
                 gd2 = fit_doub_g_2(gaus_double, x, ydg)
-                t_mean = gd2.mean.value
+                res = minimize(gd2, [6562.8], method='L-BFGS-B', bounds=[[x[19 - 5], x[19 + 5]],])
+                t_mean = res.x
 
             dop_arr[T,xi,yi] = t_mean
 

@@ -151,9 +151,8 @@ for T in range(small_cube.shape[0]):
                 res = minimize(gd2, [6562.8], method='L-BFGS-B', bounds=[[x[19 - 5], x[19 + 5]],])
                 t_mean = res.x
 
-            dop_arr[T,xi,yi] = t_mean
-
-
+            dop_arr[xi,yi] = t_mean
+    np.save(dop_arr, '/storage2/jet/dop_arrs/dop_arr_{:03d}'.format(T))
 
 
 #            # revert to an interpolation to find the minima

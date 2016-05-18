@@ -1,3 +1,4 @@
+from __future__ import print_function, division
 from sunkitsst.read_cubes import read_cubes
 import matplotlib.pyplot as plt
 import numpy as np
@@ -53,14 +54,13 @@ class PoissonlikeDistr(object):
         return self.evaluate(params)
 
 
-small_cube = np.array(icube[-2:-1,:, 600:,450:570])
+small_cube = np.array(icube[100:,:, 600:,450:570])
 
 small_cube = img_as_float(small_cube)
-dop_arr = np.zeros(small_cube[:, 0, :, :].shape)
+dop_arr = np.zeros(small_cube[0, 0, :, :].shape)
 param_arr = np.zeros(small_cube[:, 0, :, :].shape)
 plt.ioff()
 for T in range(small_cube.shape[0]):
-    print T
     # define the box to do it in
     for xi in range(small_cube[0].shape[1]):
         for yi in range(small_cube[0].shape[2]):
@@ -75,7 +75,7 @@ for T in range(small_cube.shape[0]):
             # this definitley works (ish)
             ysg = ysg*-1 + np.max(y)
             # Daniela: is there a reason why there are round brackets around the Gaussian model?
-            gaus_sing = (models.Gaussian1D(amplitude=np.max(ysg), mean=x[19], stddev=np.std(ysg)))
+            gaus_sing = models.Gaussian1D(amplitude=np.max(ysg), mean=x[19], stddev=np.std(ysg))
 
             # Daniela: instantiate the log-likelihood object;
             # please check whether it uses the right arrays for the data
@@ -148,11 +148,14 @@ for T in range(small_cube.shape[0]):
                 fit_doub_g_2 = fitting.LevMarLSQFitter()
                 ydg = y[:]
                 gd2 = fit_doub_g_2(gaus_double, x, ydg)
-                res = minimize(gd2, [6562.8], method='L-BFGS-B', bounds=[[x[19 - 5], x[19 + 5]],])
-                t_mean = res.x
+                res = minimize(gd2, [6562.8],
+                               method='L-BFGS-B',
+                               bounds=[[x[19 - 5], x[19 + 5]],])
+                t_mean = np.mean(res.x)
 
             dop_arr[xi,yi] = t_mean
-    np.save(dop_arr, '/storage2/jet/dop_arrs/dop_arr_{:03d}'.format(T))
+    np.save('/storage2/jet/dop_arrs/dop_arr_{:03d}.npy'.format(T), dop_arr)
+    print('/storage2/jet/dop_arrs/dop_arr_{:03d}.npy')
 
 
 #            # revert to an interpolation to find the minima

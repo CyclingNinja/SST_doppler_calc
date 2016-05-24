@@ -65,9 +65,10 @@ if rank == 0:
     imheader, icube, spheader, spcube = read_cubes(imfile,spfile)
     small_cube = np.array(icube[100:,:, 600:,450:570])
     small_cube = img_as_float(small_cube)
+    chunks = np.array_split(small_cube, size)
 
 # implements the mpi usage
-chunks = np.array_split(small_cube, size)
+
 small_cube = comm.scatter(chunks, root=0)
 
     

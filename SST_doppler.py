@@ -151,7 +151,7 @@ for T in range(small_cube.shape[0]):
                 res = minimize(gd2, [6562.8],
                                method='L-BFGS-B',
                                bounds=[[x[19 - 5], x[19 + 5]],])
-                t_mean = np.mean(-1*res.x)
+                t_mean = res.x
 
             dop_arr[xi,yi] = t_mean
     np.save('/storage2/jet/dop_arrs/dop_arr_{:03d}.npy'.format(T), dop_arr)

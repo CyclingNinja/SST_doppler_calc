@@ -66,7 +66,8 @@ if rank == 0:
     small_cube = np.array(icube[100:,:, 600:,450:570])
     small_cube = img_as_float(small_cube)
     chunks = np.array_split(small_cube, size)
-
+else:
+    chucks = None
 # implements the mpi usage
 
 small_cube = comm.scatter(chunks, root=0)

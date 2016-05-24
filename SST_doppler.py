@@ -50,8 +50,8 @@ class PoissonlikeDistr(object):
 
 
 # read in some datas
-imfile = '/data_swat/arlimb/crispex.6563.icube'
-spfile = '/data_swat/arlimb/crispex.6563.sp.icube'
+imfile = '/data/arlimb/crispex.6563.icube'
+spfile = '/data/arlimb/crispex.6563.sp.icube'
 wave_ind = np.loadtxt('spect_ind.txt')
 
 #set some constants
@@ -59,15 +59,15 @@ SST_cad = 2.5
 SST_pix = 0.059
 l_core = 6562.8
 
-
-
+#    small_cube = np.array(icube[100:,:, 600:,450:570])
+nt = 159
 if rank == 0:
     imheader, icube, spheader, spcube = read_cubes(imfile,spfile)
-    small_cube = np.array(icube[100:,:, 600:,450:570])
+    small_cube = np.array(icube[100:100+nt,:, 600:,450:570])
     small_cube = img_as_float(small_cube)
     chunks = np.array_split(small_cube, size)
 else:
-    chucks = None
+    chunks = None
 # implements the mpi usage
 
 small_cube = comm.scatter(chunks, root=0)
@@ -76,13 +76,6 @@ small_cube = comm.scatter(chunks, root=0)
 dop_arr = np.zeros(small_cube[0, 0, :, :].shape)
 param_arr = np.zeros(small_cube[:, 0, :, :].shape)
 plt.ioff()
-
-print(small_cube.shape)
-print(dop_arr.shape)
-print(param_arr.shape)
-
-raise
-
 
 
 for T in range(small_cube.shape[0]):
@@ -179,8 +172,11 @@ for T in range(small_cube.shape[0]):
                 t_mean = np.mean(-1*res.x)
 
             dop_arr[xi,yi] = t_mean
-    np.save('/storage2/jet/dop_arrs/dop_arr_{:03d}.npy'.format(T), dop_arr)
-    print('/storage2/jet/dop_arrs/dop_arr_{:03d}.npy')
+    np.save('/storage2/jet/dop_arrs/dop_arr_test{:03d}.npy'.format(int(T+rank*nt/size)), dop_arr)
+    print('/storage2/jet/dop_arrs/dop_arr_test{:03d}.npy'.format(int(T+rank*nt/size)))
+
+
+
 
 
 #            # revert to an interpolation to find the minima

@@ -77,8 +77,12 @@ dop_arr = np.zeros(small_cube[0, 0, :, :].shape)
 param_arr = np.zeros(small_cube[:, 0, :, :].shape)
 plt.ioff()
 
-
+files = glob('/storage2/jet/dop_arrs/*.npy')
 for T in range(small_cube.shape[0]):
+    # check whether the file is currently in the directory and skip is if needed
+    if '/storage2/jet/dop_arrs/dop_arr_test{:03d}.npy'.format(int(T+rank*nt/size)) in files:
+        print('skipping {:03d}'.format(int(T+rank*nt/size))
+        continue
     # define the box to do it in
     for xi in range(small_cube[0].shape[1]):
         for yi in range(small_cube[0].shape[2]):
